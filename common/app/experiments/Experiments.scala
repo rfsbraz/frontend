@@ -7,7 +7,8 @@ import org.joda.time.LocalDate
 object ActiveExperiments extends ExperimentsDefinition {
   override val allExperiments: Set[Experiment] = Set(
     OrielParticipation,
-    OldTLSSupportDeprecation
+    OldTLSSupportDeprecation,
+    LazyLoadImages
   )
   implicit val canCheckExperiment = new CanCheckExperiment(this)
 }
@@ -29,3 +30,10 @@ object OldTLSSupportDeprecation extends Experiment(
   participationGroup = TLSSupport
 )
 
+object LazyLoadImages extends Experiment(
+  name = "lazy-load-images",
+  description = "Lazy-loaded non-main images for participants on fronts as images approach the viewport",
+  owners = Seq(Owner.withGithub("nicl")),
+  sellByDate = new LocalDate(2018, 3, 1),
+  participationGroup = Perc0A
+)
