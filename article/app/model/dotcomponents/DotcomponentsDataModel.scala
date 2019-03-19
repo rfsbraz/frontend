@@ -27,7 +27,7 @@ import navigation.UrlHelpers.{Footer, Header, SideMenu, getReaderRevenueUrl}
 import navigation.ReaderRevenueSite.{Support, SupportContribute, SupportSubscribe}
 import model.meta.{Guardian, LinkedData, PotentialAction}
 import ai.x.play.json.implicits.optionWithNull // Note, required despite Intellij saying otherwise
-import views.support.{AffiliateLinksCleaner, CamelCase, FourByThree, GUDateTimeFormat, ImgSrc, Item1200, OneByOne} // Note, required despite Intellij saying otherwise
+import views.support.{AffiliateLinksCleaner, CamelCase, FourByThree, GUDateTimeFormat, ImgSrc, Item1200, OneByOne, GoogleAnalyticsAccount} // Note, required despite Intellij saying otherwise
 
 // We have introduced our own set of objects for serializing data to the DotComponents API,
 // because we don't want people changing the core frontend models and as a side effect,
@@ -104,6 +104,16 @@ case class Commercial(
   commercialProperties: Option[CommercialProperties], //DEPRECATED TO DELETE
 )
 
+case class GoogleAnalyticsTrackers(
+  editorialTest: String,
+  editorialProd: String,
+  editorial: String,
+)
+
+case class GoogleAnalytics(
+  trackers: GoogleAnalyticsTrackers
+)
+
 // top-level structures
 
 case class DCSite(
@@ -117,7 +127,8 @@ case class DCSite(
   nav: NavMenu,
   readerRevenueLinks: ReaderRevenueLinks,
   commercialUrl: String,
-  assetsPath: String
+  assetsPath: String,
+  googleAnalytics: GoogleAnalytics
 )
 
 case class DCPage(
@@ -193,6 +204,14 @@ object ReaderRevenueLinks {
   implicit val writes = Json.writes[ReaderRevenueLinks]
 }
 
+object GoogleAnalyticsTrackers {
+  implicit val writes = Json.writes[GoogleAnalyticsTrackers]
+}
+
+object GoogleAnalytics {
+  implicit val writes = Json.writes[GoogleAnalytics]
+}
+
 object DCPage {
   implicit val writes = Json.writes[DCPage]
 }
@@ -205,7 +224,7 @@ object DotcomponentsDataModel {
 
   val VERSION = 2
 
-  def fromArticle(articlePage: ArticlePage, request: RequestHeader, blocks: APIBlocks): DotcomponentsDataModel = {
+  def fromArticle(articlePage: ArticlePage, request: RequestHeader, blocks: APIBlocks, context: model.ApplicationContext): DotcomponentsDataModel = {
 
     val article = articlePage.article
 
@@ -369,6 +388,16 @@ object DotcomponentsDataModel {
       ampFooterReaderRevenueLink
     )
 
+    val googleAnalyticsTrackers = GoogleAnalyticsTrackers(
+      GoogleAnalyticsAccount.editorialTest.trackerName,
+      GoogleAnalyticsAccount.editorialProd.trackerName,
+      GoogleAnalyticsAccount.editorialTracker(context).trackerName
+    )
+
+    val googleAnalytics = GoogleAnalytics(
+      googleAnalyticsTrackers
+    )
+
     val site = DCSite(
       Configuration.ajax.url,
       Configuration.site.host,
@@ -380,7 +409,8 @@ object DotcomponentsDataModel {
       navMenu,
       readerRevenueLinks,
       buildFullCommercialUrl("javascripts/graun.dotcom-rendering-commercial.js"),
-      Configuration.assets.path
+      Configuration.assets.path,
+      googleAnalytics
     )
 
     val tags = Tags(
