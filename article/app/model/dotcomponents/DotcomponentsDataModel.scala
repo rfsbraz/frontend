@@ -116,7 +116,8 @@ case class DCSite(
   subscribeWithGoogleApiUrl: String,
   nav: NavMenu,
   readerRevenueLinks: ReaderRevenueLinks,
-  commercialUrl: String
+  commercialUrl: String,
+  assetsPath: String
 )
 
 case class DCPage(
@@ -378,7 +379,8 @@ object DotcomponentsDataModel {
       Configuration.google.subscribeWithGoogleApiUrl,
       navMenu,
       readerRevenueLinks,
-      buildFullCommercialUrl("javascripts/graun.dotcom-rendering-commercial.js")
+      buildFullCommercialUrl("javascripts/graun.dotcom-rendering-commercial.js"),
+      Configuration.assets.path
     )
 
     val tags = Tags(
@@ -437,7 +439,7 @@ object DotcomponentsDataModel {
         article.content.showInRelated,
         article.trail.isCommentable,
         linkedData
-      ),
+      )
     )
 
     DotcomponentsDataModel(
