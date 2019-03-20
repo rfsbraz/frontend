@@ -77,7 +77,8 @@ case class Meta(
   hasStoryPackage: Boolean,
   hasRelated: Boolean,
   isCommentable: Boolean,
-  linkedData: List[LinkedData]
+  linkedData: List[LinkedData],
+  hasShowcaseMainElement: Boolean
 )
 
 case class Tags(
@@ -286,7 +287,7 @@ object DotcomponentsDataModel {
     val dcBlocks = Blocks(mainBlock, bodyBlocks)
 
     val jsConfig = (k: String) => articlePage.getJavascriptConfig.get(k).map(_.as[String])
-
+    val jsConfigOptionBoolean = (k: String) => articlePage.getJavascriptConfig.get(k).map(_.as[Boolean])
 
     val jsPageData = Configuration.javascript.pageData mapKeys { key =>
       CamelCase.fromHyphenated(key.split('.').lastOption.getOrElse(""))
@@ -468,7 +469,8 @@ object DotcomponentsDataModel {
         articlePage.related.hasStoryPackage,
         article.content.showInRelated,
         article.trail.isCommentable,
-        linkedData
+        linkedData,
+        jsConfigOptionBoolean("hasShowcaseMainElement").getOrElse(false)
       )
     )
 
