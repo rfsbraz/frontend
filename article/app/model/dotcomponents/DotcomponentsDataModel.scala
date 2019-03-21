@@ -10,7 +10,7 @@ import conf.{Configuration, Static}
 import conf.Configuration.affiliatelinks
 import conf.switches.Switches
 import controllers.ArticlePage
-import model.SubMetaLinks
+import model.{Page, SubMetaLinks}
 import model.dotcomrendering.pageElements.{DisclaimerBlockElement, PageElement}
 import model.meta._
 import navigation.NavMenu
@@ -19,15 +19,16 @@ import navigation.UrlHelpers._
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import views.html.fragments.affiliateLinksDisclaimer
-import views.support.{AffiliateLinksCleaner, CamelCase, GUDateTimeFormat, ImgSrc, Item1200} // Note, required despite Intellij saying otherwise
+import views.support.{AffiliateLinksCleaner, CamelCase, GUDateTimeFormat, ImgSrc, Item1200}
 import views.support.{CamelCase, GUDateTimeFormat, ImgSrc, Item1200}
 import common.Maps.RichMap
-import navigation.UrlHelpers.{AmpHeader, AmpFooter}
+import navigation.UrlHelpers.{AmpFooter, AmpHeader}
 import navigation.UrlHelpers.{Footer, Header, SideMenu, getReaderRevenueUrl}
 import navigation.ReaderRevenueSite.{Support, SupportContribute, SupportSubscribe}
 import model.meta.{Guardian, LinkedData, PotentialAction}
-import ai.x.play.json.implicits.optionWithNull // Note, required despite Intellij saying otherwise
-import views.support.{AffiliateLinksCleaner, CamelCase, FourByThree, GUDateTimeFormat, ImgSrc, Item1200, OneByOne, GoogleAnalyticsAccount} // Note, required despite Intellij saying otherwise
+import ai.x.play.json.implicits.optionWithNull
+import views.support.{AffiliateLinksCleaner, CamelCase, FourByThree, GUDateTimeFormat, GoogleAnalyticsAccount, ImgSrc, Item1200, OneByOne}
+import views.support.JavaScriptPage
 
 // We have introduced our own set of objects for serializing data to the DotComponents API,
 // because we don't want people changing the core frontend models and as a side effect,
@@ -103,6 +104,7 @@ case class Commercial(
   editionCommercialProperties: Map[String, EditionCommercialProperties],
   prebidIndexSites: List[PrebidIndexSite],
   commercialProperties: Option[CommercialProperties], //DEPRECATED TO DELETE
+  hbImpl: String
 )
 
 case class GoogleAnalyticsTrackers(
@@ -285,7 +287,7 @@ object DotcomponentsDataModel {
     }
 
     val dcBlocks = Blocks(mainBlock, bodyBlocks)
-
+    
     val jsConfig = (k: String) => articlePage.getJavascriptConfig.get(k).map(_.as[String])
     val jsConfigOptionBoolean = (k: String) => articlePage.getJavascriptConfig.get(k).map(_.as[Boolean])
 
@@ -431,6 +433,7 @@ object DotcomponentsDataModel {
         sites <- commercial.prebidIndexSites
       } yield sites.toList).getOrElse(List()),
       article.metadata.commercial,
+      JavaScriptPage.getMap(articlePage, Edition(request), false).get("hbImpl").map(_.as[String]).getOrElse("none")
     )
 
     val content = DCPage(
